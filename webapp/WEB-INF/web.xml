@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * This program is free software; you can redistribute it and/or modify it under the 
+ * terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software 
+ * Foundation.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with this 
+ * program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html 
+ * or from the Free Software Foundation, Inc., 
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * Copyright 2011 Pentaho Corporation.  All rights reserved.
+ *
+ * Created Oct 18th, 2012
+ * @author Pedro Vale (pedro.vale@webdetails.pt)
+-->
+
+
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+  <display-name>Telemetry Servlet</display-name>
+  <description/>
+
+  <context-param>
+    <param-name>csvFilePath</param-name>
+    <param-value>@csv.file.path@</param-value>
+  </context-param>
+
+
+  <servlet>
+    <servlet-name>TelemetryServlet</servlet-name>
+    <servlet-class>org.pentaho.telemetry.web.TelemetryServlet</servlet-class>
+    <init-param>
+    <param-name>csvFilePath</param-name>
+    <param-value>@csv.file.path@</param-value>
+    </init-param>
+  </servlet>
+
+ 
+  <servlet-mapping>
+    <servlet-name>TelemetryServlet</servlet-name>
+    <url-pattern>/telemetry</url-pattern>
+  </servlet-mapping>
+
+
+  <session-config>
+    <session-timeout>30</session-timeout>
+  </session-config>
+
+</web-app>
