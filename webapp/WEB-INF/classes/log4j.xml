@@ -23,7 +23,7 @@
    <!-- A size based file rolling appender, capturing everything  -->
    
    <appender name="FILE" class="org.apache.log4j.RollingFileAppender">
-     <param name="File" value="telemetry.log"/>
+     <param name="File" value="/var/logs/telemetry.log"/>
      <param name="Append" value="true"/>
      <param name="MaxFileSize" value="5000KB"/>
      <param name="MaxBackupIndex" value="10"/>
