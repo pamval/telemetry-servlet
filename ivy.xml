@@ -17,7 +17,7 @@
     <dependencies defaultconf="default->default">
         <!--  third party dependencies  -->
         <dependency org="commons-io"            name="commons-io"         rev="1.4"   transitive="false"/>          
-     
+	<dependency org="log4j" name="log4j" rev="1.2.16" transitive="false"/>     
         <dependency org="commons-logging"       name="commons-logging"    rev="1.1"   transitive="false"/>
         <dependency org="net.sf.flexjson"       name="flexjson" rev="2.1" transitive="false" conf="default->default"/>
         <dependency org="org.json" name="json" rev="3.1.1" conf="default->default"/>
