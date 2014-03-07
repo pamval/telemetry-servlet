@@ -37,56 +37,60 @@ import org.pentaho.telemetry.TelemetryEvent;
 
 public class EventSerializerCSV implements EventSerializer {
 
-  private static Log logger = LogFactory.getLog(EventSerializerCSV.class);
+  private static Log logger = LogFactory.getLog( EventSerializerCSV.class );
   
   protected String path;
   
   protected static final String CSV_SEPARATOR = ",";
   
   @Override
-  public boolean setup(Map<String, String> parameters) {
+  public boolean setup( Map<String, String> parameters ) {
     //Get path to write files to from parameters
-    if (!parameters.containsKey("csvFilePath")) {
-      logger.error("Parameters must contain csvFilePath with path where to save the files to");
+    if ( !parameters.containsKey("csvFilePath") ) {
+      logger.error( "Parameters must contain csvFilePath with path where to save the files to" );
       return false;
     }
-    this.path = parameters.get("csvFilePath");
+    this.path = parameters.get( "csvFilePath" );
     return true;
   }
 
-  @Override
-  public boolean serializeEvents(List<TelemetryEvent> events) {
-    //Create a new file
-    String fileName = getFileName();
+
+  public boolean shutdown() {
+    return true;
+  }
+
+  protected boolean serializeEventsToFile( String fileName, List<TelemetryEvent> events ) {
+
     BufferedWriter bw = null;
     try {
-      bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8"));
-    } catch (FileNotFoundException ex) {
+      bw = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( fileName ), "UTF-8" ) );
+    } catch ( FileNotFoundException ex ) {
       logger.error("Unable to open file for writing. FileName: " + fileName, ex);
       return false;
-    } catch (UnsupportedEncodingException ex) {
-      logger.error("Unsupported encoding UTF-8?", ex);
+    } catch ( UnsupportedEncodingException ex ) {
+      logger.error( "Unsupported encoding UTF-8?", ex );
       return false;
     }
 
+
     StringBuilder line = new StringBuilder();
-    
-    line.append("pluginName").append(CSV_SEPARATOR)
-            .append("pluginVersion").append(CSV_SEPARATOR)
-            .append("platformVersion").append(CSV_SEPARATOR)
-            .append("timestamp").append(CSV_SEPARATOR)
-            .append("type").append(CSV_SEPARATOR)
-            .append("origin").append(CSV_SEPARATOR)
-            .append("extraInfo");
-          
-    
+
+    line.append( "pluginName" ).append(  CSV_SEPARATOR )
+            .append( "pluginVersion" ).append( CSV_SEPARATOR )
+            .append( "platformVersion" ).append( CSV_SEPARATOR )
+            .append( "timestamp" ).append( CSV_SEPARATOR )
+            .append( "type" ).append( CSV_SEPARATOR )
+            .append( "origin" ).append( CSV_SEPARATOR )
+            .append( "extraInfo" );
+
+
     try {
       bw.append(line.toString());
       bw.newLine();
-                   
-      for (TelemetryEvent te : events) {
-        line.delete(0, line.length());
-      
+
+      for ( TelemetryEvent te : events ) {
+        line.delete( 0, line.length() );
+
         line.append(safeCsvString(te.getPluginName())).append(CSV_SEPARATOR)
                 .append(safeCsvString(te.getPluginVersion())).append(CSV_SEPARATOR)
                 .append(safeCsvString(te.getPlatformVersion())).append(CSV_SEPARATOR)
@@ -94,19 +98,25 @@ public class EventSerializerCSV implements EventSerializer {
                 .append(te.getEventType().name()).append(CSV_SEPARATOR)
                 .append(safeCsvString(te.getOrigin())).append(CSV_SEPARATOR)
                 .append(safeCsvString(getExtraInfoAsString(te.getExtraInfo())));
-        
+
         bw.append(line.toString());
-        bw.newLine();        
+        bw.newLine();
       }
-      
+
       bw.flush();
       bw.close();
-    } catch (IOException ioe) {
-      logger.error("Unable to save csv file with telemetry events", ioe);
+    } catch ( IOException ioe ) {
+      logger.error( "Unable to save csv file with telemetry events", ioe );
       return false;
     }
-    
+
     return true;
+  }
+
+
+  @Override
+  public boolean serializeEvents( List<TelemetryEvent> events ) {
+    return serializeEventsToFile( getFileName(), events );
   }
  
   

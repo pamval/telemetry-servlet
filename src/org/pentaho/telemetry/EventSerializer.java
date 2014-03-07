@@ -24,7 +24,9 @@ import java.util.Map;
 
 public interface EventSerializer {
   
-  boolean setup(Map<String, String> configParameters);
+  boolean setup( Map<String, String> configParameters );
   
-  boolean serializeEvents(List<TelemetryEvent> events);
+  boolean serializeEvents( List<TelemetryEvent> events );
+
+  boolean shutdown();
 }

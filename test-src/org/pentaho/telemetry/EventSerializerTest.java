@@ -31,6 +31,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
+import org.pentaho.telemetry.serializers.DeferredEventSerializerCSV;
 import org.pentaho.telemetry.serializers.EventSerializerCSV;
 
 public class EventSerializerTest {
@@ -40,18 +41,41 @@ public class EventSerializerTest {
     File f = new File("test.csv");
     f.delete();
   }
-  
+
   @Test
-  public void testSerializeEvent() throws FileNotFoundException, IOException {
+  public void testDeferredSerializerNoIntervalSupplied() throws IOException {
+    DeferredEventSerializerCSVForTests serializer = new DeferredEventSerializerCSVForTests();
+    HashMap<String, String> parameters = new HashMap<String, String>();
+    parameters.put("csvFilePath", ".");
+    serializer.setup(parameters);
+
+    Assert.assertEquals( 1000 * 60 * 60, serializer.getInterval() ); //Default interval is one hour
+
+  }
+
+
+  @Test
+  public void testDeferredSerializeEvent() throws FileNotFoundException, IOException {
  
     List<TelemetryEvent> resultList = new ArrayList<TelemetryEvent>(1);
     TelemetryEvent te = new TelemetryEvent("plugin", "v1.0", "v2.0", 9080, TelemetryEvent.TelemetryEventType.OTHER, null, "myOrigin");
     resultList.add(te);
-    
-    EventSerializerCSVForTests serializer = new EventSerializerCSVForTests();
-    
+
+    DeferredEventSerializerCSVForTests serializer = new DeferredEventSerializerCSVForTests();
+    HashMap<String, String> parameters = new HashMap<String, String>();
+    parameters.put("writeInterval", "3");
+    parameters.put("csvFilePath", ".");
+    serializer.setup(parameters);
     Assert.assertTrue(serializer.serializeEvents(resultList));
-    
+    resultList.clear();
+    resultList.add( new TelemetryEvent("plugin2", "v1.0", "v2.0", 9085, TelemetryEvent.TelemetryEventType.OTHER, null, "myOrigin") );
+    Assert.assertTrue(serializer.serializeEvents(resultList));
+    try {
+      Thread.sleep( 4000 );
+    } catch ( InterruptedException e ) {
+      e.printStackTrace();
+    }
+
     FileInputStream fis = new FileInputStream(new File("test.csv"));
 
     String csvContent = IOUtils.toString(fis, "UTF-8");
@@ -62,11 +86,41 @@ public class EventSerializerTest {
             "pluginVersion" + sep + "platformVersion" + sep + "timestamp" + sep 
             + "type" + sep + "origin" + sep + "extraInfo" + eol ));
 
-    Assert.assertTrue(csvContent.endsWith("plugin" + sep + "v1.0" + sep + "v2.0" 
-            + sep + "9080" + sep + "OTHER" + sep + "myOrigin" + sep + "" + eol));
-    
+    Assert.assertTrue(csvContent.endsWith("plugin2" + sep + "v1.0" + sep + "v2.0"
+            + sep + "9085" + sep + "OTHER" + sep + "myOrigin" + sep + "" + eol));
+    int firstIndex = csvContent.indexOf("9080");
+    Assert.assertTrue( firstIndex > 0 );
+    Assert.assertTrue( csvContent.indexOf( "9085", firstIndex + 10 ) > 0 );
   }
-    
+
+
+  @Test
+  public void testSerializeEvent() throws FileNotFoundException, IOException {
+
+    List<TelemetryEvent> resultList = new ArrayList<TelemetryEvent>(1);
+    TelemetryEvent te = new TelemetryEvent("plugin", "v1.0", "v2.0", 9080, TelemetryEvent.TelemetryEventType.OTHER, null, "myOrigin");
+    resultList.add(te);
+
+    EventSerializerCSVForTests serializer = new EventSerializerCSVForTests();
+
+    Assert.assertTrue(serializer.serializeEvents(resultList));
+
+    FileInputStream fis = new FileInputStream(new File("test.csv"));
+
+    String csvContent = IOUtils.toString(fis, "UTF-8");
+
+    String eol =  System.getProperty("line.separator");
+    String sep = serializer.getSeparator();
+    Assert.assertTrue(csvContent.startsWith("pluginName" + sep +
+            "pluginVersion" + sep + "platformVersion" + sep + "timestamp" + sep
+            + "type" + sep + "origin" + sep + "extraInfo" + eol ));
+
+    Assert.assertTrue(csvContent.endsWith("plugin" + sep + "v1.0" + sep + "v2.0"
+            + sep + "9080" + sep + "OTHER" + sep + "myOrigin" + sep + "" + eol));
+
+  }
+
+
 
   
   @Test
@@ -195,6 +249,28 @@ public class EventSerializerTest {
       
     }
   }
-  
-  
+
+  class DeferredEventSerializerCSVForTests extends DeferredEventSerializerCSV {
+
+    public int getInterval() {
+      return interval;
+    }
+
+    public String getBaseFileName() {
+      return super.getFileName();
+    }
+
+    public String getSeparator() {
+      return CSV_SEPARATOR;
+    }
+
+    @Override
+    protected String getFileName() {
+      return "test.csv";
+
+    }
+  }
+
+
+
 }

@@ -43,6 +43,7 @@ import org.json.JSONObject;
 import org.pentaho.telemetry.EventDeserializer;
 import org.pentaho.telemetry.EventSerializer;
 import org.pentaho.telemetry.deserializers.EventDeserializerJson;
+import org.pentaho.telemetry.serializers.DeferredEventSerializerCSV;
 import org.pentaho.telemetry.serializers.EventSerializerCSV;
 
 public class TelemetryServlet extends HttpServlet {
@@ -50,7 +51,7 @@ public class TelemetryServlet extends HttpServlet {
   private static Log logger = LogFactory.getLog(EventSerializerCSV.class);
   
   
-  private EventSerializer serializer = new EventSerializerCSV();
+  private EventSerializer serializer = new DeferredEventSerializerCSV();
   private EventDeserializer deserializer = new EventDeserializerJson();
   
   /**
@@ -67,6 +68,12 @@ public class TelemetryServlet extends HttpServlet {
     }
 
     serializer.setup(params);
+  }
+
+
+  public void destroy() {
+    logger.debug( "Entering destroy method" );
+    serializer.shutdown();
   }
 
   /**
